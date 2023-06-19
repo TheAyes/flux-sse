@@ -2,7 +2,7 @@
 	"name": "flux-sse",
 	"private": false,
 	"author": "Ayes",
-	"version": "1.0.1-build.1",
+	"version": "1.0.1-build.2",
 	"type": "module",
 	"main": "./lib/index.min.js",
 	"types": "./lib/index.d.ts",
@@ -47,6 +47,15 @@
 		"server-sent-events",
 		"sse",
 		"flux",
-		"flux-sse"
+		"flux-sse",
+		"node",
+		"node.js",
+		"nodejs",
+		"server",
+		"server-sent",
+		"events",
+		"server sent events",
+		"server sent",
+		"server-sent"
 	]
 }
