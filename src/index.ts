@@ -75,7 +75,12 @@ const useSSE: UniversalSSEMiddleware = (
 	request: IncomingMessage | Request,
 	response: SSEResponse,
 	next: NextFunction | ((err?: any) => void),
-	config: SSEConfig
+	config: SSEConfig = {
+		heartbeatIntervalMs: 15000,
+		bufferSize: 1024,
+		throttleMs: 0,
+		maxRequestsPerSecond: 50,
+	}
 ) => {
 	// Unique client ID
 	const clientId = (Math.random() * 10000).toString();
