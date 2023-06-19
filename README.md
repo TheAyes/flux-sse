@@ -2,7 +2,6 @@
 
 [![npm](https://img.shields.io/npm/v/flux-sse)](https://www.npmjs.com/package/flux-sse)
 [![npm bundle size](https://img.shields.io/bundlephobia/min/flux-sse)](https://www.npmjs.com/package/flux-sse)
-[![npm](https://img.shields.io/npm/dt/flux-sse)](https://www.npmjs.com/package/flux-sse)
 [![GitHub](https://img.shields.io/github/license/TheAyes/flux-sse)]()
 
 A middleware function that enables server-sent events (SSE) for your server. This middleware allows you to send real-time updates from the server to the client
