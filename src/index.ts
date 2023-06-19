@@ -2,39 +2,143 @@ import {IncomingMessage, ServerResponse} from "http";
 import {NextFunction, Request, Response} from "express";
 
 /**
- * Configuration options for SSE middleware.
+ * Configuration options for Server-Sent Events (SSE) middleware.
  */
 type SSEConfig = {
+	/**
+	 * Optional callback function to be executed when the SSE connection is closed.
+	 * This can be used to perform cleanup or other actions when a client disconnects.
+	 */
 	onClose?: () => void;
+
+	/**
+	 * Interval in milliseconds at which heartbeats should be sent to keep the SSE connection alive.
+	 * Heartbeats are sent as comments, and can be useful to prevent timeouts on some proxies or clients.
+	 * Default value is 15000 milliseconds (15 seconds).
+	 */
 	heartbeatIntervalMs?: number;
+
+	/**
+	 * Optional callback function to be executed at each heartbeat interval.
+	 * This can be used to perform periodic tasks, such as checking for new data to send to clients.
+	 */
 	heartbeatCallback?: () => void;
+
+	/**
+	 * Name of the event type to be sent to the client.
+	 * If not provided, the client will listen for messages without a specific event type.
+	 */
 	event?: string;
+
+	/**
+	 * The reconnection time in milliseconds that will be sent to the client.
+	 * This specifies how long the browser should wait before attempting to reconnect to the source of server-sent events.
+	 * If not specified, the browser will use its default value.
+	 */
 	retry?: number;
+
+	/**
+	 * Identifier for the last event sent. This can be used by the client to let the server know
+	 * where to start with the next message in case of connection issues.
+	 */
 	id?: string;
+
+	/**
+	 * The maximum number of events that should be buffered before being sent to the client.
+	 * If the number of events exceeds this size, the buffer will be flushed and sent to the client.
+	 * Default value is 1024 events.
+	 */
 	bufferSize?: number;
+
+	/**
+	 * Minimum interval in milliseconds that should elapse between sending events to the client.
+	 * This is used for throttling the rate at which events are sent to the client.
+	 * Default value is 0, indicating no throttling.
+	 */
 	throttleMs?: number;
+
+	/**
+	 * The maximum number of events per second that the server should send to a single client.
+	 * This can be used to implement rate limiting.
+	 * Default value is 50 events per second.
+	 */
 	maxRequestsPerSecond?: number;
 };
 
 /**
- * Extended response type with SSE-specific methods.
+ * An extension of the standard server response object with additional methods for handling
+ * Server-Sent Events (SSE). This is used within the SSE middleware to allow for the sending
+ * of events, comments, and managing client subscriptions.
  */
 type SSEResponse = ServerResponse &
 	Response & {
+		/**
+		 * Sends an SSE event to the client with the specified data and optional configuration options.
+		 *
+		 * @param data - The data to be sent as the event's payload. Can be of any type.
+		 * @param options - Optional configuration options for the event, such as event type, retry interval, or custom ID.
+		 */
 		sseSend: (data: unknown, options?: SSEOptions) => void;
+
+		/**
+		 * Sends an SSE comment to the client. This can be useful for sending control messages, debugging, or keeping
+		 * the connection alive. Comments are ignored by the client and will not trigger event listeners.
+		 *
+		 * @param comment - The comment text to be sent to the client.
+		 */
 		sseComment: (comment: string) => void;
+
+		/**
+		 * Sends an acknowledgement for an SSE event with the specified event ID. This can be used to
+		 * let the client know that an event has been processed successfully.
+		 *
+		 * @param eventId - The unique identifier of the event to acknowledge.
+		 */
 		sseAcknowledge: (eventId: string) => void;
+
+		/**
+		 * Subscribes the client to a specific type of event. After subscribing, the client will only receive
+		 * events of the specified type.
+		 *
+		 * @param event - The event type to subscribe to.
+		 */
 		subscribeToEvent: (event: string) => void;
+
+		/**
+		 * Unsubscribes the client from a specific type of event. After unsubscribing, the client will no longer
+		 * receive events of the specified type.
+		 *
+		 * @param event - The event type to unsubscribe from.
+		 */
 		unsubscribeFromEvent: (event: string) => void;
 	};
 
 /**
- * Options for sending SSE data.
+ * Configuration options for sending an SSE event to the client.
  */
 type SSEOptions = {
+	/**
+	 * Specifies the type of the event. This can be used by the client to listen for specific types
+	 * of events. If not specified, the client's generic event listener will be used.
+	 */
 	event?: string;
+
+	/**
+	 * Specifies the reconnection time in milliseconds. If the connection is lost, the client will
+	 * attempt to reconnect to the server after the specified amount of time.
+	 */
 	retry?: number;
+
+	/**
+	 * Specifies a custom ID for the event. This can be used by the client to keep track of the last
+	 * event received, so it can request events it might have missed if the connection is lost.
+	 */
 	id?: string;
+
+	/**
+	 * Specifies the unique identifier for the event. This can be useful for scenarios where you
+	 * want to acknowledge that an event has been processed successfully.
+	 */
 	eventId?: string;
 };
 
@@ -42,24 +146,53 @@ type SSEOptions = {
  * Type definition for the SSE middleware function.
  */
 type UniversalSSEMiddleware = (
+	/**
+	 * The incoming HTTP request. This can be either an `IncomingMessage` (from Node.js HTTP module)
+	 * or an Express `Request` object.
+	 */
 	request: IncomingMessage | Request,
+	/**
+	 * The server response, extended with SSE-specific methods to facilitate sending server-sent
+	 * events to the client.
+	 */
 	response: SSEResponse,
+	/**
+	 * The next middleware function in the Express application’s request-response cycle. This can
+	 * also be an error handler if it accepts an error as its first argument.
+	 */
 	next: NextFunction | ((err?: any) => void),
+	/**
+	 * Configuration options for customizing the behavior of the SSE middleware.
+	 */
 	config: SSEConfig
 ) => void;
 
 /**
- * Represents the subscribed event types for a client.
+ * Represents the subscription information for a client connected via SSE (Server-Sent Events).
+ * This type is used to keep track of the types of events a client has subscribed to.
  */
 type ClientSubscription = {
+	/**
+	 * A set of strings representing the types of events the client has subscribed to.
+	 * Each string corresponds to an event type.
+	 */
 	eventTypes: Set<string>;
 };
 
 /**
- * Represents an acknowledged SSE event.
+ * Represents the acknowledgement status of a specific SSE (Server-Sent Events) event.
+ * This type is used to keep track of whether a particular event has been acknowledged by the client.
  */
 type EventAcknowledgement = {
+	/**
+	 * A string that uniquely identifies the SSE event.
+	 */
 	eventId: string;
+
+	/**
+	 * A boolean indicating whether the event has been acknowledged by the client.
+	 * True if the event has been acknowledged, false otherwise.
+	 */
 	acknowledged: boolean;
 };
 
