@@ -2,7 +2,7 @@
 	"name": "flux-sse",
 	"private": false,
 	"author": "Ayes",
-	"version": "1.0.0-beta.3",
+	"version": "1.0.0-beta.4",
 	"type": "module",
 	"main": "./lib/index.min.js",
 	"types": "./lib/index.d.ts",
