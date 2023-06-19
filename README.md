@@ -4,6 +4,15 @@
 
 A middleware function that brings real-time updates to your server-client communication using server-sent events (SSE). 🌐📡
 
+## 📚 Core Features 📚
+
+- 🌍 **Browser Compatibility**: Ensure cross-browser support.
+- 🔄 **Connection Management**: Handle connections efficiently.
+- 📡 **Event Streaming**: Stream data to clients.
+- ❤️ **Heartbeat Mechanism**: Maintain live connections.
+- 🛠️ **Custom Configuration**: Adjust settings per needs.
+- 🚧 **Clean Up**: Graceful connection termination.
+
 ## Installation
 
 To use this middleware, install it via npm:
@@ -85,32 +94,6 @@ Subscribes the client to the specified `event` type. Once subscribed, the client
 #### `unsubscribeFromEvent(event: string): void` 🔕
 
 Unsubscribes the client from the specified `event` type. The client will no longer receive SSE events of the unsubscribed type.
-
-## Example 🌟
-
-Here's an example of how to use Flux SSE in an Express application:
-
-```javascript
-import express from "express";
-import {useSSE} from "flux-sse";
-
-const app = express();
-
-app.use(useSSE);
-
-app.get("/events", (req, res) => {
-	// Send SSE events to the client
-	res.sseSend({message: "Hello, world! 🌍"});
-});
-
-app.listen(3000, () => {
-	console.log("Server is up and running on port 3000 🚀");
-});
-```
-
-In the example above, the server sends an SSE event with the message "Hello, world! 🌍" to the client when the client requests the `/events` route.
-
-Feel free to customize the middleware configuration and SSE event handling according to your needs.
 
 ## License 📄
 
